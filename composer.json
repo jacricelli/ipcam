@@ -1,0 +1,16 @@
+{
+    "name": "jacricelli/ipcam",
+    "description": "Aplicación para descargar las grabaciones de UFO P2P WiFi Camera.",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "cakephp/console": "^4.2"
+    },
+    "require-dev": {
+        "jetbrains/phpstorm-stubs": "^2020.2"
+    },
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}
