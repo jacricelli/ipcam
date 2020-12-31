@@ -9,6 +9,11 @@
     "require-dev": {
         "jetbrains/phpstorm-stubs": "^2020.2"
     },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
     "prefer-stable": true,
     "config": {
         "sort-packages": true
