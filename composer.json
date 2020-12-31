@@ -7,6 +7,7 @@
         "cakephp/console": "^4.2"
     },
     "require-dev": {
+        "cakephp/cakephp-codesniffer": "^4.2",
         "jetbrains/phpstorm-stubs": "^2020.2"
     },
     "autoload": {
