@@ -4,7 +4,8 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "cakephp/console": "^4.2"
+        "cakephp/console": "^4.2",
+        "cakephp/core": "^4.2"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "^4.2",
