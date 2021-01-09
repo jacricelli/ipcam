@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App;
 
 use Cake\Console\CommandCollection;
+use Cake\Core\Configure;
+use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Core\ConsoleApplicationInterface;
 
 /**
@@ -18,6 +20,8 @@ class Application implements ConsoleApplicationInterface
      */
     public function bootstrap(): void
     {
+        Configure::config('default', new PhpConfig(dirname(__DIR__) . DS . 'config' . DS));
+        Configure::load('ipcam', 'default', false);
     }
 
     /**
