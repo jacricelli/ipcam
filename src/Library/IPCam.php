@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 /** @noinspection PhpUnusedFieldDefaultValueInspection */
 declare(strict_types=1);
 
@@ -242,11 +242,16 @@ class IPCam
      *
      * @param \App\Library\RecordingInterface $recording Grabación
      * @return bool
+     * @throws \RuntimeException
      */
     private function deleteRecording(RecordingInterface $recording): bool
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, sprintf('%s/rec/rec_file.asp?page=%d', $this->url, $number));
+        curl_setopt($ch, CURLOPT_URL, sprintf(
+            '%s/rec_action.cgi?op=del&fl=%s',
+            $this->url,
+            urlencode($recording->getFilename())
+        ));
         curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
@@ -256,7 +261,7 @@ class IPCam
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 
         $error = null;
-        $content = curl_exec($ch);
+        curl_exec($ch);
         if (curl_errno($ch)) {
             $error = curl_error($ch);
         }
@@ -266,6 +271,6 @@ class IPCam
             throw new \RuntimeException($error);
         }
 
-        return $content;
+        return true;
     }
 }

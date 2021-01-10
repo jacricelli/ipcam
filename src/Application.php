@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Command\DeleteCommand;
 use App\Command\DownloadCommand;
 use App\Command\RecordingsCommand;
 use App\Command\StatusCommand;
@@ -35,6 +36,7 @@ class Application implements ConsoleApplicationInterface
      */
     public function console(CommandCollection $commands): CommandCollection
     {
+        $commands->add('delete', DeleteCommand::class);
         $commands->add('download', DownloadCommand::class);
         $commands->add('recordings', RecordingsCommand::class);
         $commands->add('status', StatusCommand::class);
