@@ -24,6 +24,10 @@ class RecordingsCommand extends BaseCommand
             $ipcam = IPCamFactory::create();
             $recordings = $ipcam->getRecordings((int)$args->getArgument('page'));
 
+            if (!$recordings->count()) {
+                throw new \RuntimeException('La colección de grabaciones está vacía.');
+            }
+
             $rows[] = ['#', 'Filename', 'Size', 'Start Date', 'End Date'];
             foreach ($recordings as $index => $recording) {
                 $rows[] = [
