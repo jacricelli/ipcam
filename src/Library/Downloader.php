@@ -95,19 +95,23 @@ class Downloader
      */
     private function download(RecordingInterface $recording): bool
     {
-        $file = $this->path . DS . $recording->getStartDate()->format('Y-m-d h-i') . '.avi';
+        $path = $this->getPath($recording);
+        if (!file_exists($path)) {
+            if (!mkdir($path)) {
+                throw new \RuntimeException('No se puede crear el directorio ' . $path);
+            }
+        }
+
+        $file = $path . DS . $this->getFileName($recording);
         if (file_exists($file)) {
             return true;
         }
 
-        $name = $recording->getFilename();
-        $url = sprintf('%s/sd/%s', $this->url, urlencode($name));
-        $tempfile = $file . '.tmp';
-
+        $tempfile = $path . DS . $this->getTempFileName($recording);
         $fp = fopen($tempfile, 'w+');
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL, $this->getFileUrl($recording));
         curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
@@ -118,15 +122,16 @@ class Downloader
         if (!$this->io) {
             curl_setopt($ch, CURLOPT_NOPROGRESS, true);
         } else {
+            $filename = basename($file);
             curl_setopt($ch, CURLOPT_NOPROGRESS, false);
             curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function (
                 $resource,
                 $downloadSize,
                 $downloadedSize
-            ) use ($name) {
+            ) use ($filename) {
                 if ($downloadSize) {
                     $this->io->overwrite(
-                        sprintf('[%d%%] %s', round($downloadedSize * 100 / $downloadSize), $name),
+                        sprintf('[%d%%] %s', round($downloadedSize * 100 / $downloadSize), $filename),
                         0
                     );
                 }
@@ -146,5 +151,49 @@ class Downloader
         }
 
         return $result;
+    }
+
+    /**
+     * Obtiene la ruta de acceso donde guardar la grabación
+     *
+     * @param \App\Library\RecordingInterface $recording Grabación
+     * @return string
+     */
+    private function getPath(RecordingInterface $recording): string
+    {
+        return $this->path . DS . $recording->getStartDate()->format('Y-m');
+    }
+
+    /**
+     * Obtiene el nombre del archivo de la grabación
+     *
+     * @param \App\Library\RecordingInterface $recording Grabación
+     * @return string
+     */
+    private function getFileName(RecordingInterface $recording): string
+    {
+        return $recording->getStartDate()->format('Y-m-d_h-i') . '.avi';
+    }
+
+    /**
+     * Obtiene el nombre del archivo temporal de la grabación
+     *
+     * @param \App\Library\RecordingInterface $recording Grabación
+     * @return string
+     */
+    private function getTempFileName(RecordingInterface $recording): string
+    {
+        return $this->getFileName($recording) . '.tmp';
+    }
+
+    /**
+     * Obtiene la URL de la grabación
+     *
+     * @param \App\Library\RecordingInterface $recording Grabación
+     * @return string
+     */
+    private function getFileUrl(RecordingInterface $recording): string
+    {
+        return sprintf('%s/sd/%s', $this->url, urlencode($recording->getFilename()));
     }
 }
