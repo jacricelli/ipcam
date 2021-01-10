@@ -87,6 +87,30 @@ class IPCam
     }
 
     /**
+     * Elimina las grabaciones de la página especificada
+     *
+     * @param int $pageNumber Número de página
+     * @return void
+     * @throws \Exception
+     */
+    public function deleteRecordings(int $pageNumber = 1): void
+    {
+        $recordings = $this->getRecordings($pageNumber);
+        if (!$recordings->count()) {
+            throw new \RuntimeException('La colección de grabaciones está vacía.');
+        }
+
+        foreach ($recordings as $recording) {
+            if (!$this->deleteRecording($recording)) {
+                throw new \RuntimeException(
+                    sprintf('No se pudo eliminar la grabación \'%s\'.', $recording->getFilename())
+                );
+            }
+            $this->io->out(sprintf('Eliminado \'%s\'.', $recording->getFilename()));
+        }
+    }
+
+    /**
      * Obtiene el espacio total
      *
      * @return int
@@ -159,7 +183,7 @@ class IPCam
         }
 
         if (isset($this->properties->RecFilesTotal, $this->properties->PageMaxitem)) {
-            return (int)round($this->properties->RecFilesTotal / $this->properties->PageMaxitem);
+            return (int)ceil($this->properties->RecFilesTotal / $this->properties->PageMaxitem);
         }
 
         return 0;
@@ -188,6 +212,38 @@ class IPCam
      * @throws \RuntimeException
      */
     private function getPage(int $number = 1): string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, sprintf('%s/rec/rec_file.asp?page=%d', $this->url, $number));
+        curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+        $error = null;
+        $content = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+        }
+        curl_close($ch);
+
+        if ($error) {
+            throw new \RuntimeException($error);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Elimina una grabación
+     *
+     * @param \App\Library\RecordingInterface $recording Grabación
+     * @return bool
+     */
+    private function deleteRecording(RecordingInterface $recording): bool
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, sprintf('%s/rec/rec_file.asp?page=%d', $this->url, $number));
