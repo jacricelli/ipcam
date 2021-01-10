@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 namespace App\Library;
 
-use ErrorException;
-use Exception;
-
 /**
  * IPCam
  */
@@ -42,7 +39,7 @@ class IPCam
     public function __construct(string $url, string $user, string $pass)
     {
         $this->url = $url;
-        $this->credentials = base64_encode($user . ':' . $pass);
+        $this->credentials = $user . ':' . $pass;
     }
 
     /**
@@ -69,7 +66,6 @@ class IPCam
      * @param int $pageNumber Número de página
      * @return \App\Library\RecordingCollection
      * @throws \Exception
-     * @throws \ErrorException
      */
     public function getRecordings(int $pageNumber = 1): RecordingCollection
     {
@@ -86,31 +82,30 @@ class IPCam
      *
      * @param int $number Número de página
      * @return string
-     * @throws \ErrorException
+     * @throws \RuntimeException
      */
     private function getPage(int $number = 1): string
     {
-        set_error_handler(
-            function ($severity, $message, $file, $line) {
-                /** @noinspection PhpUnhandledExceptionInspection */
-                throw new ErrorException($message, $severity, $severity, $file, $line);
-            }
-        );
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, sprintf('%s/rec/rec_file.asp?page=%d', $this->url, $number));
+        curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
 
-        try {
-            return file_get_contents(
-                sprintf('%s/rec/rec_file.asp?page=%d', $this->url, $number),
-                false,
-                stream_context_create([
-                    'http' => [
-                        'header' => sprintf('Authorization: Basic %s', $this->credentials),
-                    ],
-                ])
-            );
-        } catch (Exception $e) {
-            throw $e;
-        } finally {
-            restore_error_handler();
+        $error = null;
+        $content = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
         }
+        curl_close($ch);
+
+        if ($error) {
+            throw new \RuntimeException($error);
+        }
+
+        return $content;
     }
 }
