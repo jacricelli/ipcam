@@ -25,8 +25,16 @@ class DeleteCommand extends BaseCommand
         }
 
         try {
+            $page = (int)$args->getArgument('page');
             $ipcam = IPCamFactory::create($io);
-            $ipcam->deleteRecordings((int)$args->getArgument('page'));
+            if ($page) {
+                $ipcam->deleteRecordings($page);
+            } else {
+                $total = $ipcam->getTotalPages();
+                for ($page = $total; $page >= 1; $page--) {
+                    $ipcam->deleteRecordings($page);
+                }
+            }
 
             return self::CODE_SUCCESS;
         } catch (\Exception $e) {
@@ -43,7 +51,7 @@ class DeleteCommand extends BaseCommand
     {
         $parser
             ->addArgument('page', [
-                'required' => true,
+                'required' => false,
                 'help' => 'Page number',
             ]);
 
