@@ -46,16 +46,6 @@ class IPCam
     }
 
     /**
-     * Obtiene la URL
-     *
-     * @return string
-     */
-    public function getUrl(): string
-    {
-        return $this->url;
-    }
-
-    /**
      * Obtiene las propiedades del dispositivo y de la página actual
      *
      * @return \App\Library\Device|null
