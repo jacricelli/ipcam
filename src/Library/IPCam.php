@@ -75,15 +75,16 @@ class IPCam
      * Descarga las grabaciones de la página especificada
      *
      * @param int $pageNumber Número de página
+     * @param array $skip El número de una o más grabaciones que no deben descargarse
      * @return void
      * @throws \Exception
      */
-    public function downloadRecordings(int $pageNumber = 1): void
+    public function downloadRecordings(int $pageNumber = 1, array $skip = []): void
     {
         $recordings = $this->getRecordings($pageNumber);
 
         $downloader = DownloaderFactory::create($this->io);
-        $downloader->downloadCollection($recordings);
+        $downloader->downloadCollection($recordings, $skip);
     }
 
     /**

@@ -61,19 +61,24 @@ class Downloader
      * Descarga una colección de grabaciones
      *
      * @param \App\Library\RecordingCollection $recordings Colección de grabaciones
+     * @param array $skip El número de una o más grabaciones que no deben descargarse
      * @return void
      */
-    public function downloadCollection(RecordingCollection $recordings): void
+    public function downloadCollection(RecordingCollection $recordings, array $skip = []): void
     {
         if (!$recordings->count()) {
             throw new RuntimeException('La colección de grabaciones está vacía.');
         }
 
-        foreach ($recordings as $recording) {
-            if (!$this->download($recording)) {
-                throw new RuntimeException(
-                    sprintf('Se produjo un error al descargar la grabación %s.', $recording->getFilename())
-                );
+        foreach ($recordings as $index => $recording) {
+            if (!in_array(++$index, $skip)) {
+                if (!$this->download($recording)) {
+                    throw new RuntimeException(
+                        sprintf('Se produjo un error al descargar la grabación %s.', $recording->getFilename())
+                    );
+                }
+            } else {
+                $this->io->info('Omitiendo la descarga de la grabación ' . $recording->getFilename());
             }
         }
     }
