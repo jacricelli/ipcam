@@ -170,6 +170,7 @@ class IPCam
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 
         $error = null;
         $content = curl_exec($ch);
