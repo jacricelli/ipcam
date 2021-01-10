@@ -237,6 +237,42 @@ class IPCam
     }
 
     /**
+     * Formatea el almacenamiento del dispositivo
+     *
+     * @return string
+     * @throws \RuntimeException
+     */
+    public function format(): string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, sprintf('%s/rec_action.cgi?op=fmt', $this->url));
+        curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+        $error = null;
+        $content = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+        }
+        curl_close($ch);
+
+        if ($content !== 'ok') {
+            $error = 'Se produjo un error interno al formatear el almacenamiento.';
+        }
+
+        if ($error) {
+            throw new \RuntimeException($error);
+        }
+
+        return $content;
+    }
+
+    /**
      * Obtiene el contenido de la página especificada
      *
      * @param int $number Número de página

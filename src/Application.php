@@ -5,9 +5,11 @@ namespace App;
 
 use App\Command\DeleteCommand;
 use App\Command\DownloadCommand;
+use App\Command\FormatCommand;
 use App\Command\RebootCommand;
 use App\Command\RecordingsCommand;
 use App\Command\StatusCommand;
+use App\Command\ValidateCommand;
 use Cake\Console\CommandCollection;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
@@ -39,9 +41,11 @@ class Application implements ConsoleApplicationInterface
     {
         $commands->add('delete', DeleteCommand::class);
         $commands->add('download', DownloadCommand::class);
+        $commands->add('format', FormatCommand::class);
         $commands->add('reboot', RebootCommand::class);
         $commands->add('recordings', RecordingsCommand::class);
         $commands->add('status', StatusCommand::class);
+        $commands->add('validate', ValidateCommand::class);
 
         return $commands;
     }

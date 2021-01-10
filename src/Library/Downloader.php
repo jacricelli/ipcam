@@ -84,6 +84,28 @@ class Downloader
     }
 
     /**
+     * Valida las descargas de una colección de grabaciones
+     *
+     * @param \App\Library\RecordingCollection $recordings Colección de grabaciones
+     * @return void
+     */
+    public function validateCollection(RecordingCollection $recordings): void
+    {
+        if (!$recordings->count()) {
+            throw new RuntimeException('La colección de grabaciones está vacía.');
+        }
+
+        foreach ($recordings as $recording) {
+            $path = $this->getPath($recording);
+            $file = $this->getFileName($recording);
+
+            if (!file_exists($path . DS . $file)) {
+                $this->io->info('No se ha encontrado la descarga de la grabación ' . basename($file));
+            }
+        }
+    }
+
+    /**
      * Descarga una grabación
      *
      * @param \App\Library\RecordingInterface $recording Grabación
