@@ -32,6 +32,7 @@ class DeleteCommand extends BaseCommand
             } else {
                 $total = $ipcam->getTotalPages();
                 for ($page = $total; $page >= 1; $page--) {
+                    $io->info('Eliminando página ' . $page . '...');
                     $ipcam->deleteRecordings($page);
                 }
             }

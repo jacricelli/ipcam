@@ -27,6 +27,7 @@ class DownloadCommand extends BaseCommand
             } else {
                 $total = $ipcam->getTotalPages();
                 for ($page = $total; $page >= 1; $page--) {
+                    $io->info('Descargando página ' . $page . '...');
                     $ipcam->downloadRecordings($page);
                 }
             }
