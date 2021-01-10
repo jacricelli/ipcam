@@ -20,8 +20,16 @@ class DownloadCommand extends BaseCommand
     public function execute(Arguments $args, ConsoleIo $io): ?int
     {
         try {
+            $page = (int)$args->getArgument('page');
             $ipcam = IPCamFactory::create($io);
-            $ipcam->downloadRecordings((int)$args->getArgument('page'));
+            if ($page) {
+                $ipcam->downloadRecordings($page);
+            } else {
+                $total = $ipcam->getTotalPages();
+                for ($page = $total; $page >= 1; $page--) {
+                    $ipcam->downloadRecordings($page);
+                }
+            }
 
             return self::CODE_SUCCESS;
         } catch (\Exception $e) {
@@ -38,7 +46,7 @@ class DownloadCommand extends BaseCommand
     {
         $parser
             ->addArgument('page', [
-                'required' => true,
+                'required' => false,
                 'help' => 'Page number',
             ]);
 
