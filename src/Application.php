@@ -5,6 +5,7 @@ namespace App;
 
 use App\Command\DeleteCommand;
 use App\Command\DownloadCommand;
+use App\Command\RebootCommand;
 use App\Command\RecordingsCommand;
 use App\Command\StatusCommand;
 use Cake\Console\CommandCollection;
@@ -38,6 +39,7 @@ class Application implements ConsoleApplicationInterface
     {
         $commands->add('delete', DeleteCommand::class);
         $commands->add('download', DownloadCommand::class);
+        $commands->add('reboot', RebootCommand::class);
         $commands->add('recordings', RecordingsCommand::class);
         $commands->add('status', StatusCommand::class);
 
