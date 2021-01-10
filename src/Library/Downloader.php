@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Library;
 
 use Cake\Console\ConsoleIo;
-use pq\Exception\RuntimeException;
+use RuntimeException;
 
 /**
  * Downloader
