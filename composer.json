@@ -4,6 +4,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
+        "ext-curl": "*",
         "cakephp/console": "^4.2",
         "cakephp/core": "^4.2"
     },
