@@ -261,8 +261,11 @@ class IPCam
         }
         curl_close($ch);
 
-        if ($content !== 'ok') {
-            $error = 'Se produjo un error interno al formatear el almacenamiento.';
+        if (is_string($content)) {
+            $content = strtolower(trim($content));
+            if ($content !== 'ok') {
+                $error = 'Se produjo un error interno al formatear el almacenamiento.';
+            }
         }
 
         if ($error) {
