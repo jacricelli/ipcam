@@ -29,8 +29,8 @@ class RecordingsCommand extends BaseCommand
                 $rows[] = [
                     $recording->getFilename(),
                     (round($recording->getFileSize() / 1024)) . ' MB',
-                    $recording->getStartDate()->format('d/m/y h:i'),
-                    $recording->getEndDate()->format('d/m/y h:i'),
+                    $recording->getStartDate()->format('d/m/y H:i'),
+                    $recording->getEndDate()->format('d/m/y H:i'),
                 ];
             }
 

@@ -164,7 +164,7 @@ class Downloader
      */
     private function getFileName(RecordingInterface $recording): string
     {
-        return $recording->getStartDate()->format('Y-m-d_h-i-s') . '.avi';
+        return $recording->getStartDate()->format('Y-m-d_H-i-s') . '.avi';
     }
 
     /**
