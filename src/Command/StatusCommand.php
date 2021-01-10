@@ -26,8 +26,8 @@ class StatusCommand extends BaseCommand
             $rows = [
                 ['Total Space', 'Free Space', 'Total Files', 'Pages', 'Current State'],
                 [
-                    round($device->getTotalSpace() / 1024) . ' GB',
-                    round($device->getFreeSpace() / 1024) . ' GB',
+                    $device->getTotalSpace() . ' MB',
+                    $device->getFreeSpace() . ' MB',
                     (string)$device->getTotalRecordings(),
                     (string)$device->getTotalPages(),
                     $device->isRunning() ? 'Recording' : 'Idle',
