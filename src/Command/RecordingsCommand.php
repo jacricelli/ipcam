@@ -24,9 +24,10 @@ class RecordingsCommand extends BaseCommand
             $ipcam = IPCamFactory::create();
             $recordings = $ipcam->getRecordings((int)$args->getArgument('page'));
 
-            $rows[] = ['Filename', 'Size', 'Start Date', 'End Date'];
-            foreach ($recordings as $recording) {
+            $rows[] = ['#', 'Filename', 'Size', 'Start Date', 'End Date'];
+            foreach ($recordings as $index => $recording) {
                 $rows[] = [
+                    (string)++$index,
                     $recording->getFilename(),
                     (round($recording->getFileSize() / 1024)) . ' MB',
                     $recording->getStartDate()->format('d/m/y H:i'),
