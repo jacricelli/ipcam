@@ -38,7 +38,7 @@ class RecordingsCommand extends BaseCommand
 
             return self::CODE_SUCCESS;
         } catch (\Exception $e) {
-            $io->err('ERROR: Se produjo un error al intentar obtener las grabaciones.');
+            $io->error('ERROR: Se produjo un error al intentar obtener las grabaciones.');
         } finally {
             return self::CODE_ERROR;
         }
