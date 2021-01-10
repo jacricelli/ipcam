@@ -72,6 +72,21 @@ class IPCam
     }
 
     /**
+     * Descarga las grabaciones de la página especificada
+     *
+     * @param int $pageNumber Número de página
+     * @return void
+     * @throws \Exception
+     */
+    public function downloadRecordings(int $pageNumber = 1): void
+    {
+        $recordings = $this->getRecordings($pageNumber);
+
+        $downloader = DownloaderFactory::create($this->io);
+        $downloader->downloadCollection($recordings);
+    }
+
+    /**
      * Obtiene el espacio total
      *
      * @return int

@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnusedFieldDefaultValueInspection */
 declare(strict_types=1);
 
 namespace App\Library;
@@ -46,22 +47,13 @@ class Downloader
      * @param string $path Ruta donde guardar los archivos
      * @param string $user Usuario
      * @param string $pass Contraseña
+     * @param \Cake\Console\ConsoleIo|null $io Instancia de ConsoleIo
      */
-    public function __construct(string $url, string $path, string $user, string $pass)
+    public function __construct(string $url, string $path, string $user, string $pass, ?ConsoleIo $io = null)
     {
         $this->url = $url;
         $this->path = $path;
         $this->credentials = $user . ':' . $pass;
-    }
-
-    /**
-     * Establece la instancia de ConsoleIo
-     *
-     * @param \Cake\Console\ConsoleIo|null $io Instancia de ConsoleIo
-     * @return void
-     */
-    public function setConsoleIo(?ConsoleIo $io = null): void
-    {
         $this->io = $io;
     }
 
