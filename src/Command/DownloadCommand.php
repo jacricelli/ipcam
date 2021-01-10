@@ -25,7 +25,7 @@ class DownloadCommand extends BaseCommand
 
             return self::CODE_SUCCESS;
         } catch (\Exception $e) {
-            $io->err('ERROR: ' . $e->getMessage());
+            $io->error('ERROR: ' . $e->getMessage());
         } finally {
             return self::CODE_ERROR;
         }
