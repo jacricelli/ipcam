@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Command\RecordingsCommand;
+use App\Command\StatusCommand;
 use Cake\Console\CommandCollection;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
@@ -32,6 +34,9 @@ class Application implements ConsoleApplicationInterface
      */
     public function console(CommandCollection $commands): CommandCollection
     {
+        $commands->add('status', StatusCommand::class);
+        $commands->add('recordings', RecordingsCommand::class);
+
         return $commands;
     }
 }
