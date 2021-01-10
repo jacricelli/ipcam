@@ -19,6 +19,11 @@ class DeleteCommand extends BaseCommand
      */
     public function execute(Arguments $args, ConsoleIo $io): ?int
     {
+        $result = strtolower($io->ask('¿Confirma la eliminación de las grabaciones? [Y/n]', 'n'));
+        if ($result !== 'y') {
+            return self::CODE_SUCCESS;
+        }
+
         try {
             $ipcam = IPCamFactory::create($io);
             $ipcam->deleteRecordings((int)$args->getArgument('page'));
