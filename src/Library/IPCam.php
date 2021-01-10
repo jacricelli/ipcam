@@ -25,9 +25,9 @@ class IPCam
     /**
      * Propiedades
      *
-     * @var \App\Library\Device|null
+     * @var \stdClass|null
      */
-    private ?Device $device = null;
+    private ?\stdClass $properties = null;
 
     /**
      * Constructor
@@ -43,24 +43,6 @@ class IPCam
     }
 
     /**
-     * Obtiene las propiedades del dispositivo y de la página actual
-     *
-     * @return \App\Library\Device|null
-     * @throws \Exception
-     */
-    public function getDevice(): ?Device
-    {
-        if (!$this->device) {
-            $content = $this->getPage();
-
-            $parser = new PageParser($content);
-            $this->device = new Device($parser->getProperties());
-        }
-
-        return $this->device;
-    }
-
-    /**
      * Obtiene las grabaciones de la página especificada
      *
      * @param int $pageNumber Número de página
@@ -72,9 +54,103 @@ class IPCam
         $content = $this->getPage($pageNumber);
 
         $parser = new PageParser($content);
-        $this->device = new Device($parser->getProperties());
+        $this->properties = $parser->getProperties();
 
         return $parser->getRecordings();
+    }
+
+    /**
+     * Obtiene el espacio total
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function getTotalSpace(): int
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        return $this->properties->SdcardTotalSpace ?? 0;
+    }
+
+    /**
+     * Obtiene el espacio libre
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function getFreeSpace(): int
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        return $this->properties->SdcardFreeSpace ?? 0;
+    }
+
+    /**
+     * Obtiene el total de grabaciones
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function getTotalRecordings(): int
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        return $this->properties->RecFilesTotal ?? 0;
+    }
+
+    /**
+     * Obtiene la cantidad de grabaciones por página
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function getRecordingsPerPage(): int
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        return $this->properties->PageMaxitem ?? 0;
+    }
+
+    /**
+     * Obtiene el total de páginas
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function getTotalPages(): int
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        if (isset($this->properties->RecFilesTotal, $this->properties->PageMaxitem)) {
+            return (int)round($this->properties->RecFilesTotal / $this->properties->PageMaxitem);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Indica si la cámara se encuentra grabando
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function isRunning(): bool
+    {
+        if (!$this->properties) {
+            $this->getRecordings();
+        }
+
+        return isset($this->properties->RecRuning) ? (bool)$this->properties->RecRuning : false;
     }
 
     /**
