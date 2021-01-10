@@ -22,7 +22,7 @@ class DownloadCommand extends BaseCommand
         try {
             $ipcam = IPCamFactory::create($io);
             $page = (int)$args->getArgument('page');
-            $skip = $this->parseSkipArgument($args->getArgument('skip'), $ipcam->getRecordingsPerPage());
+            $skip = $this->parseSkipArgument((string)$args->getArgument('skip'), $ipcam->getRecordingsPerPage());
 
             if ($page) {
                 $ipcam->downloadRecordings($page, $skip);
