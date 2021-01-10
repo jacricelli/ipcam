@@ -1,7 +1,10 @@
 <?php
+/** @noinspection PhpUnusedFieldDefaultValueInspection */
 declare(strict_types=1);
 
 namespace App\Library;
+
+use Cake\Console\ConsoleIo;
 
 /**
  * IPCam
@@ -30,16 +33,25 @@ class IPCam
     private ?\stdClass $properties = null;
 
     /**
+     * Instancia de ConsoleIo
+     *
+     * @var \Cake\Console\ConsoleIo|null
+     */
+    private ?ConsoleIo $io = null;
+
+    /**
      * Constructor
      *
      * @param string $url URL
      * @param string $user Usuario
      * @param string $pass Contraseña
+     * @param \Cake\Console\ConsoleIo|null $io Instancia de ConsoleIo
      */
-    public function __construct(string $url, string $user, string $pass)
+    public function __construct(string $url, string $user, string $pass, ?ConsoleIo $io = null)
     {
         $this->url = $url;
         $this->credentials = $user . ':' . $pass;
+        $this->io = $io;
     }
 
     /**
