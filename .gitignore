@@ -1,5 +1,6 @@
 .idea/*
 .phive/*
 bin/.env.local
+build/*
 tools/*
 vendor/*
