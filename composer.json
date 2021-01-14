@@ -10,7 +10,7 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "IPCam\\": "src/"
         }
     },
     "prefer-stable": true,
