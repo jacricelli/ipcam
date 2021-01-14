@@ -13,7 +13,8 @@ try {
     if ($pharRunning) {
         $pharRunning = dirname($pharRunning);
     }
-    (new Dotenv())->loadEnv($pharRunning ?: __DIR__ . '/.env');
+
+    (new Dotenv())->loadEnv(($pharRunning ?: __DIR__) . '/.env');
 } catch (\Exception $e) {
     echo "ERROR: No se ha encontrado el archivo de configuración o el formato del mismo no es válido.\n";
     exit(1);
