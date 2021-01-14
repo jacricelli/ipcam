@@ -1,6 +1,6 @@
 {
     "name": "jacricelli/ipcam",
-    "description": "Aplicación para descargar las grabaciones de UFO P2P WiFi Camera.",
+    "description": "Aplicación para gestionar la cámara UFO P2P WiFi.",
     "type": "project",
     "license": "proprietary",
     "require": {
