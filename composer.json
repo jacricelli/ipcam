@@ -4,13 +4,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "ext-curl": "*",
-        "cakephp/console": "^4.2",
-        "cakephp/core": "^4.2"
-    },
-    "require-dev": {
-        "cakephp/cakephp-codesniffer": "^4.2",
-        "jetbrains/phpstorm-stubs": "^2020.2"
+        "ext-curl": "*"
     },
     "autoload": {
         "psr-4": {
