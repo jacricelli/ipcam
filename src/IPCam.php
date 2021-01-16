@@ -308,30 +308,6 @@ class IPCam
     }
 
 //    /**
-//     * Elimina las grabaciones de la página especificada
-//     *
-//     * @param int $pageNumber Número de página
-//     * @return void
-//     * @throws \Exception
-//     */
-//    public function deleteRecordings(int $pageNumber = 1): void
-//    {
-//        $recordings = $this->getRecordings($pageNumber);
-//        if (!$recordings->count()) {
-//            throw new \RuntimeException('La colección de grabaciones está vacía.');
-//        }
-//
-//        foreach ($recordings as $recording) {
-//            if (!$this->deleteRecording($recording)) {
-//                throw new \RuntimeException(
-//                    sprintf('No se pudo eliminar la grabación \'%s\'.', $recording->getFilename())
-//                );
-//            }
-//            $this->io->out(sprintf('Eliminado \'%s\'.', $recording->getFilename()));
-//        }
-//    }
-//
-//    /**
 //     * Formatea el almacenamiento del dispositivo
 //     *
 //     * @return string
@@ -368,42 +344,5 @@ class IPCam
 //        }
 //
 //        return $content;
-//    }
-//
-//    /**
-//     * Elimina una grabación
-//     *
-//     * @param \App\Library\RecordingInterface $recording Grabación
-//     * @return bool
-//     * @throws \RuntimeException
-//     */
-//    private function deleteRecording(RecordingInterface $recording): bool
-//    {
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, sprintf(
-//            '%s/rec_action.cgi?op=del&fl=%s',
-//            $this->url,
-//            urlencode($recording->getFilename())
-//        ));
-//        curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
-//        curl_setopt($ch, CURLOPT_HEADER, 0);
-//        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-//        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-//
-//        $error = null;
-//        curl_exec($ch);
-//        if (curl_errno($ch)) {
-//            $error = curl_error($ch);
-//        }
-//        curl_close($ch);
-//
-//        if ($error) {
-//            throw new \RuntimeException($error);
-//        }
-//
-//        return true;
 //    }
 }
