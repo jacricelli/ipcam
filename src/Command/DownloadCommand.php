@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 declare(strict_types=1);
 
 namespace IPCam\Command;
@@ -20,7 +21,6 @@ class DownloadCommand extends Command
      * @var string
      */
     protected static $defaultName = 'download';
-
     /**
      * Configura el comando
      *

@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpPureAttributeCanBeAddedInspection */
 declare(strict_types=1);
 
 namespace IPCam;
@@ -189,7 +190,7 @@ class IPCam
      * @param string $html Documento HTML
      * @return string
      */
-    private function getRelevantContent($html): string
+    private function getRelevantContent(string $html): string
     {
         $start = strpos($html, 'var sdcardDetected');
         $end = strpos($html, 'function initTranslation');
@@ -203,6 +204,7 @@ class IPCam
      * @param Recording $recording Grabación
      * @param OutputInterface|null $output Salida
      * @return bool
+     * @noinspection PhpUnusedParameterInspection
      */
     private function downloadFile(Recording $recording, ?OutputInterface $output): bool
     {

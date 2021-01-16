@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpPureAttributeCanBeAddedInspection */
 declare(strict_types=1);
 
 namespace IPCam;
@@ -82,6 +83,7 @@ class Device
      * Obtiene el número de grabaciones por página
      *
      * @return int
+     * @noinspection PhpUnused
      */
     public function getRecordingsPerPage(): int
     {
