@@ -110,16 +110,14 @@ class IPCam
             curl_setopt($ch, CURLOPT_TIMEOUT, 1);
         }
 
-        $error = null;
         $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            $error = curl_error($ch);
-        }
+        $errno = curl_errno($ch);
+        $error = curl_error($ch);
         curl_close($ch);
 
-        if ($error) {
-            if (!$returnResponse && stripos($error, 'Operation timed out after') === false) {
-                throw new \RuntimeException($error);
+        if ($errno) {
+            if ($returnResponse || $errno !== CURLE_OPERATION_TIMEDOUT) {
+                throw new \RuntimeException($error, $errno);
             }
         }
 
