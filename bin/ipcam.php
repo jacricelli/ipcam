@@ -20,10 +20,11 @@ try {
     exit(1);
 }
 
-$application->add(new \IPCam\Command\StatusCommand());
-$application->add(new \IPCam\Command\RecordingsCommand());
-$application->add(new \IPCam\Command\RebootCommand());
 $application->add(new \IPCam\Command\DownloadCommand());
+$application->add(new \IPCam\Command\FormatCommand());
+$application->add(new \IPCam\Command\RebootCommand());
+$application->add(new \IPCam\Command\RecordingsCommand());
+$application->add(new \IPCam\Command\StatusCommand());
 
 try {
     $application->run();
