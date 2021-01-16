@@ -21,6 +21,7 @@ try {
 }
 
 $application->add(new \IPCam\Command\StatusCommand());
+$application->add(new \IPCam\Command\RecordingsCommand());
 
 /** @noinspection PhpUnhandledExceptionInspection */
 $application->run();
