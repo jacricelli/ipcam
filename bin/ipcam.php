@@ -25,5 +25,8 @@ $application->add(new \IPCam\Command\RecordingsCommand());
 $application->add(new \IPCam\Command\RebootCommand());
 $application->add(new \IPCam\Command\DownloadCommand());
 
-/** @noinspection PhpUnhandledExceptionInspection */
-$application->run();
+try {
+    $application->run();
+} catch (\Exception $e) {
+    echo 'ERROR: ' . $e->getMessage() . PHP_EOL;
+}
