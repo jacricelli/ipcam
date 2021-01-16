@@ -20,5 +20,7 @@ try {
     exit(1);
 }
 
+$application->add(new \IPCam\Command\StatusCommand());
+
 /** @noinspection PhpUnhandledExceptionInspection */
 $application->run();

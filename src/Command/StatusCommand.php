@@ -1,45 +1,57 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Command;
+namespace IPCam\Command;
 
-use App\Console\Helper\TableHelper;
-use App\Library\IPCamFactory;
-use Cake\Console\Arguments;
-use Cake\Console\BaseCommand;
-use Cake\Console\ConsoleIo;
+use IPCam\IPCamFactory;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * StatusCommand
  */
-class StatusCommand extends BaseCommand
+class StatusCommand extends Command
 {
     /**
-     * @inheritDoc
+     * Nombre del comando
+     *
+     * @var string
      */
-    public function execute(Arguments $args, ConsoleIo $io): ?int
+    protected static $defaultName = 'status';
+
+    /**
+     * Ejecuta el comando
+     *
+     * @param InputInterface $input Entrada
+     * @param OutputInterface $output Salida
+     * @return int
+     */
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $ipcam = IPCamFactory::create();
+            $device = IPCamFactory::create()->getDevice();
 
-            $rows = [
-                ['Total Space', 'Free Space', 'Total Files', 'Pages', 'Current State'],
-                [
-                    $ipcam->getTotalSpace() . ' MB',
-                    $ipcam->getFreeSpace() . ' MB',
-                    (string)$ipcam->getTotalRecordings(),
-                    (string)$ipcam->getTotalPages(),
-                    $ipcam->isRunning() ? 'Recording' : 'Idle',
-                ],
-            ];
+            $table = new Table($output);
+            $table
+                ->setHeaders(['Total Space', 'Free Space', 'Total Files', 'Pages', 'Current State'])
+                ->setRows([
+                    [
+                        $device->getTotalSpace() . ' MB',
+                        $device->getFreeSpace() . ' MB',
+                        (string)$device->getTotalRecordings(),
+                        (string)$device->getTotalPages(),
+                        $device->isRecording() ? 'Recording' : 'Idle',
+                    ],
+                ]);
+            $table->render();
 
-            (new TableHelper($io))->output($rows);
-
-            return self::CODE_SUCCESS;
+            return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('ERROR: Se produjo un error al intentar obtener las propiedades del dispositivo.');
+            $output->writeln('<error>ERROR: ' . $e->getMessage() . '</error>');
         } finally {
-            return self::CODE_ERROR;
+            return Command::FAILURE;
         }
     }
 }
