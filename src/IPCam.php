@@ -88,6 +88,16 @@ class IPCam
     }
 
     /**
+     * Reinicia el dispositivo
+     *
+     * @return void
+     */
+    public function reboot(): void
+    {
+        $this->doRequest('media/?action=cmd&code=255&value=255', false);
+    }
+
+    /**
      * Realiza una petición
      *
      * @param string $path Ruta
@@ -175,37 +185,6 @@ class IPCam
 //                );
 //            }
 //            $this->io->out(sprintf('Eliminado \'%s\'.', $recording->getFilename()));
-//        }
-//    }
-//
-//    /**
-//     * Reinicia el dispositivo
-//     *
-//     * @return void
-//     * @throws \RuntimeException
-//     */
-//    public function reboot(): void
-//    {
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, sprintf('%s/media/?action=cmd&code=255&value=255', $this->url));
-//        curl_setopt($ch, CURLOPT_USERPWD, $this->credentials);
-//        curl_setopt($ch, CURLOPT_HEADER, 0);
-//        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-//        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-//        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-//
-//        $error = null;
-//        curl_exec($ch);
-//        if (curl_errno($ch)) {
-//            $error = curl_error($ch);
-//        }
-//        curl_close($ch);
-//
-//        if ($error && stripos($error, 'Operation timed out after') === false) {
-//            throw new \RuntimeException($error);
 //        }
 //    }
 //
