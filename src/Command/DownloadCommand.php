@@ -1,86 +1,66 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 declare(strict_types=1);
 
-namespace App\Command;
+namespace IPCam\Command;
 
-use App\Library\IPCamFactory;
-use Cake\Console\Arguments;
-use Cake\Console\BaseCommand;
-use Cake\Console\ConsoleIo;
-use Cake\Console\ConsoleOptionParser;
+use IPCam\IPCamFactory;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * DownloadCommand
  */
-class DownloadCommand extends BaseCommand
+class DownloadCommand extends Command
 {
     /**
-     * @inheritDoc
+     * Nombre del comando
+     *
+     * @var string
      */
-    public function execute(Arguments $args, ConsoleIo $io): ?int
+    protected static $defaultName = 'download';
+    /**
+     * Configura el comando
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $this
+            ->setDescription('Descarga grabaciones')
+            ->setHelp('Este comando descarga todas las grabaciones en la ubicación IPCAM_SAVEDIR.')
+            ->addArgument(
+                'skip',
+                InputArgument::OPTIONAL,
+                'Lista de grabaciones separadas por comas que no deben descargarse.'
+            );
+    }
+
+    /**
+     * Ejecuta el comando
+     *
+     * @param InputInterface $input Entrada
+     * @param OutputInterface $output Salida
+     * @return int
+     */
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $ipcam = IPCamFactory::create($io);
-            $page = (int)$args->getArgument('page');
-            $skip = $this->parseSkipArgument((string)$args->getArgument('skip'), $ipcam->getRecordingsPerPage());
+            $skip = array_filter(
+                array_unique(
+                    explode(',', (string)$input->getArgument('skip'))
+                )
+            );
 
-            if ($page) {
-                $ipcam->downloadRecordings($page, $skip);
-            } else {
-                $total = $ipcam->getTotalPages();
-                for ($page = $total; $page >= 1; $page--) {
-                    $io->info('Descargando página ' . $page . '...');
-                    $ipcam->downloadRecordings($page);
-                }
-            }
+            IPCamFactory::create()->downloadRecordings($output, $skip);
 
-            return self::CODE_SUCCESS;
+            return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('ERROR: ' . $e->getMessage());
+            $output->writeln('<error>ERROR: ' . $e->getMessage() . '</error>');
         } finally {
-            return self::CODE_ERROR;
+            return Command::FAILURE;
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
-    {
-        $parser
-            ->addArgument('page', [
-                'required' => false,
-                'help' => 'Page number',
-            ])
-            ->addArgument('skip', [
-                'required' => false,
-                'help' => 'Skip recording',
-            ]);
-
-        return parent::buildOptionParser($parser);
-    }
-
-    /**
-     * Determina los números de grabaciones que no deben descargarse
-     *
-     * @param string $argument Argumento Argumento
-     * @param int $limit Límite de valores a devolver
-     * @return array
-     */
-    private function parseSkipArgument(string $argument, int $limit = 0): array
-    {
-        $values = explode(',', $argument);
-        $result = [];
-        foreach ($values as $value) {
-            if (strpos($value, '-')) {
-                $range = explode('-', $value);
-                $result = array_merge($result, range(min($range), max($range)));
-            } else {
-                $result[] = (int)$value;
-            }
-        }
-        $result = array_filter(array_unique($result));
-
-        return $limit ? array_slice($result, 0, $limit) : $result;
     }
 }

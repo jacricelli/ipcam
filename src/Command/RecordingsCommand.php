@@ -1,65 +1,73 @@
 <?php
+/** @noinspection PhpMissingFieldTypeInspection */
 declare(strict_types=1);
 
-namespace App\Command;
+namespace IPCam\Command;
 
-use App\Console\Helper\TableHelper;
-use App\Library\IPCamFactory;
-use Cake\Console\Arguments;
-use Cake\Console\BaseCommand;
-use Cake\Console\ConsoleIo;
-use Cake\Console\ConsoleOptionParser;
+use IPCam\IPCamFactory;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * RecordingsCommand
  */
-class RecordingsCommand extends BaseCommand
+class RecordingsCommand extends Command
 {
     /**
-     * @inheritDoc
+     * Nombre del comando
+     *
+     * @var string
      */
-    public function execute(Arguments $args, ConsoleIo $io): ?int
+    protected static $defaultName = 'recordings';
+
+    /**
+     * Configura el comando
+     *
+     * @return void
+     */
+    protected function configure()
     {
-        try {
-            $ipcam = IPCamFactory::create();
-            $recordings = $ipcam->getRecordings((int)$args->getArgument('page'));
-
-            if (!$recordings->count()) {
-                throw new \RuntimeException('La colección de grabaciones está vacía.');
-            }
-
-            $rows[] = ['#', 'Filename', 'Size', 'Start Date', 'End Date'];
-            foreach ($recordings as $index => $recording) {
-                $rows[] = [
-                    (string)++$index,
-                    $recording->getFilename(),
-                    (round($recording->getFileSize() / 1024)) . ' MB',
-                    $recording->getStartDate()->format('d/m/y H:i'),
-                    $recording->getEndDate()->format('d/m/y H:i'),
-                ];
-            }
-
-            (new TableHelper($io))->output($rows);
-
-            return self::CODE_SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('ERROR: Se produjo un error al intentar obtener las grabaciones.');
-        } finally {
-            return self::CODE_ERROR;
-        }
+        $this
+            ->setDescription('Lista las grabaciones')
+            ->setHelp('Este comando lista todas las grabaciones.');
     }
 
     /**
-     * @inheritDoc
+     * Ejecuta el comando
+     *
+     * @param InputInterface $input Entrada
+     * @param OutputInterface $output Salida
+     * @return int
      */
-    public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $parser
-            ->addArgument('page', [
-                'required' => true,
-                'help' => 'Page number',
-            ]);
+        try {
+            $recordings = IPCamFactory::create()->getRecordings();
 
-        return parent::buildOptionParser($parser);
+            if (!$recordings->count()) {
+                $output->writeln('<info>No se han encontrado grabaciones.</info>');
+            } else {
+                $table = new Table($output);
+                $table->setHeaders(['#', 'Filename', 'Size', 'Start Date', 'End Date']);
+                foreach ($recordings as $index => $recording) {
+                    $table->addRow([
+                        (string)++$index,
+                        $recording->getFileName(),
+                        $recording->getFileSize() . ' kB',
+                        $recording->getStartDate()->format('d/m/y H:i'),
+                        $recording->getEndDate()->format('d/m/y H:i')
+                    ]);
+                }
+                $table->render();
+            }
+
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $output->writeln('<error>ERROR: ' . $e->getMessage() . '</error>');
+        } finally {
+            return Command::FAILURE;
+        }
     }
 }

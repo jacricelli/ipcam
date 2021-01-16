@@ -1,4 +1,6 @@
 .idea/*
-config/ipcam.php
-downloads/*
+.phive/*
+bin/.env.local
+build/*
+tools/*
 vendor/*

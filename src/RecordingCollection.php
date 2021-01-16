@@ -1,22 +1,20 @@
 <?php
+/** @noinspection PhpPureAttributeCanBeAddedInspection */
 declare(strict_types=1);
 
-namespace App\Library;
-
-use Countable;
-use Iterator;
+namespace IPCam;
 
 /**
  * RecordingCollection
  */
-class RecordingCollection implements Iterator, Countable
+class RecordingCollection implements \Iterator, \Countable
 {
     /**
      * Ítems
      *
      * @var array
      */
-    private array $items;
+    private array $items = [];
 
     /**
      * Índice
@@ -28,11 +26,23 @@ class RecordingCollection implements Iterator, Countable
     /**
      * Constructor
      *
-     * @param \App\Library\Recording[] $items Ítems
+     * @param \IPCam\Recording[] $items Ítems
      */
-    public function __construct(array $items)
+    public function __construct(array $items = [])
     {
-        $this->items = $items;
+        foreach ($items as $item) {
+            $this->add($item);
+        }
+    }
+
+    /**
+     * Agrega un ítem a la colección
+     *
+     * @param Recording $item Ítem
+     */
+    public function add(Recording $item)
+    {
+        $this->items[] = $item;
     }
 
     /**
