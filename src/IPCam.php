@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace IPCam;
 
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\OutputInterface;
+
 /**
  * IPCam
  */
@@ -16,18 +19,22 @@ class IPCam
     private Device $device;
 
     // phpcs:disable
+
     /**
      * Constructor
      *
      * @param string $url URL
      * @param string $user Usuario
      * @param string $pass Contraseña
+     * @param string $savedir Directorio donde se guardan las descargas
      */
     public function __construct(
         private string $url,
         private string $user,
         private string $pass,
-    ) {
+        private string $savedir
+    )
+    {
         $this->url = rtrim($this->url, '/');
     }
     // phpcs:enable
@@ -85,6 +92,48 @@ class IPCam
         }
 
         return $collection;
+    }
+
+    /**
+     * Descarga las grabaciones
+     *
+     * @param OutputInterface|null $output Salida
+     * @param array $skip Lista de archivos que no deben descargarse
+     * @return void
+     * @throws \Exception
+     */
+    public function downloadRecordings(?OutputInterface $output, array $skip = []): void
+    {
+        $recordings = $this->getRecordings();
+        $total = $recordings->count();
+        if (!$total) {
+            throw new \RuntimeException('No se han encontrado grabaciones.');
+        }
+
+        $output->writeln('<info>Comenzando a descargar las grabaciones...</info>');
+
+        $index = 0;
+        $skip = array_flip($skip);
+        foreach ($recordings as $index => $recording) {
+            if (!isset($skip[$recording->getFileName()])) {
+                ProgressBar::setFormatDefinition('custom', "- [" . ++$index . "/$total] %message% [%percent:3s%%]");
+                if (!$this->downloadFile($recording, $output)) {
+                    throw new \RuntimeException(
+                        'Se produjo un error al descargar la grabación ' . $recording->getFileName()
+                    );
+                }
+            } else {
+                $output->writeln(
+                    '<info>- Omitiendo la descarga de la grabación ' . $recording->getFileName() . '</info>'
+                );
+            }
+        }
+
+        if ($index < $total) {
+            $output->writeln(PHP_EOL . '<info>Se han descargado $index de $total grabaciones.</info>');
+        } else {
+            $output->writeln(PHP_EOL . '<info>Se han descargado todas las grabaciones.</info>');
+        }
     }
 
     /**
@@ -148,22 +197,116 @@ class IPCam
         return trim(substr($html, $start, $end - $start));
     }
 
-//    /**
-//     * Descarga las grabaciones de la página especificada
-//     *
-//     * @param int $pageNumber Número de página
-//     * @param array $skip El número de una o más grabaciones que no deben descargarse
-//     * @return void
-//     * @throws \Exception
-//     */
-//    public function downloadRecordings(int $pageNumber = 1, array $skip = []): void
-//    {
-//        $recordings = $this->getRecordings($pageNumber);
-//
-//        $downloader = DownloaderFactory::create($this->io);
-//        $downloader->downloadCollection($recordings, $skip);
-//    }
-//
+    /**
+     * Descarga una grabación
+     *
+     * @param Recording $recording Grabación
+     * @param OutputInterface|null $output Salida
+     * @return bool
+     */
+    private function downloadFile(Recording $recording, ?OutputInterface $output): bool
+    {
+        $path = $this->getPath($recording);
+        if (!file_exists($path)) {
+            if (!mkdir($path)) {
+                throw new \RuntimeException('No se puede crear el directorio ' . $path);
+            }
+        }
+
+        $file = $path . DIRECTORY_SEPARATOR . $this->getFileName($recording);
+        if (file_exists($file)) {
+            return true;
+        }
+
+        $tempfile = $path . DIRECTORY_SEPARATOR . $this->getTempFileName($recording);
+        $fp = fopen($tempfile, 'w+');
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->getFileUrl($recording));
+        curl_setopt($ch, CURLOPT_USERPWD, sprintf('%s:%s', $this->user, $this->pass));
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        if (!$output) {
+            curl_setopt($ch, CURLOPT_NOPROGRESS, true);
+        } else {
+            $progressBar = new ProgressBar($output, $recording->getFileSize() * 1024);
+            $progressBar->setFormat('custom');
+            $progressBar->setMessage(basename($file));
+
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function (
+                $resource,
+                $downloadSize,
+                $downloadedSize
+            ) use ($progressBar) {
+                $progressBar->setProgress($downloadedSize);
+            });
+        }
+
+        $result = curl_exec($ch);
+        curl_close($ch);
+        fclose($fp);
+
+        if ($output) {
+            $progressBar->finish();
+            $output->writeln('');
+        }
+
+        if ($result) {
+            rename($tempfile, $file);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtiene la ruta de acceso donde guardar la grabación
+     *
+     * @param \IPCam\Recording $recording Grabación
+     * @return string
+     */
+    private function getPath(Recording $recording): string
+    {
+        return $this->savedir . DIRECTORY_SEPARATOR . $recording->getStartDate()->format('Y-m');
+    }
+
+    /**
+     * Obtiene el nombre del archivo de la grabación
+     *
+     * @param \IPCam\Recording $recording Grabación
+     * @return string
+     */
+    private function getFileName(Recording $recording): string
+    {
+        return $recording->getStartDate()->format('Y-m-d_H-i-s') . '.avi';
+    }
+
+    /**
+     * Obtiene el nombre del archivo temporal de la grabación
+     *
+     * @param \IPCam\Recording $recording Grabación
+     * @return string
+     */
+    private function getTempFileName(Recording $recording): string
+    {
+        return $this->getFileName($recording) . '.tmp';
+    }
+
+    /**
+     * Obtiene la URL de la grabación
+     *
+     * @param \IPCam\Recording $recording Grabación
+     * @return string
+     */
+    private function getFileUrl(Recording $recording): string
+    {
+        return sprintf('%s/sd/%s', $this->url, urlencode($recording->getFilename()));
+    }
+
 //    /**
 //     * Elimina las grabaciones de la página especificada
 //     *

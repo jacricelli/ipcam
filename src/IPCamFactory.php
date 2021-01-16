@@ -15,12 +15,12 @@ class IPCamFactory
      */
     public static function create(): IPCam
     {
-        foreach (['IPCAM_URL', 'IPCAM_USER', 'IPCAM_PASS'] as $key) {
+        foreach (['IPCAM_URL', 'IPCAM_USER', 'IPCAM_PASS', 'IPCAM_SAVEDIR'] as $key) {
             if (empty($_ENV[$key])) {
                 throw new \RuntimeException("No se ha configurado $key.");
             }
         }
 
-        return new IPCam($_ENV['IPCAM_URL'], $_ENV['IPCAM_USER'], $_ENV['IPCAM_PASS']);
+        return new IPCam($_ENV['IPCAM_URL'], $_ENV['IPCAM_USER'], $_ENV['IPCAM_PASS'], $_ENV['IPCAM_SAVEDIR']);
     }
 }

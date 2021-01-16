@@ -23,6 +23,7 @@ try {
 $application->add(new \IPCam\Command\StatusCommand());
 $application->add(new \IPCam\Command\RecordingsCommand());
 $application->add(new \IPCam\Command\RebootCommand());
+$application->add(new \IPCam\Command\DownloadCommand());
 
 /** @noinspection PhpUnhandledExceptionInspection */
 $application->run();
