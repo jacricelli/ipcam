@@ -8,6 +8,13 @@ namespace IPCam;
  */
 class IPCam
 {
+    /**
+     * Dispositivo
+     *
+     * @var Device
+     */
+    private Device $device;
+
     // phpcs:disable
     /**
      * Constructor
@@ -17,31 +24,122 @@ class IPCam
      * @param string $pass Contraseña
      */
     public function __construct(
-        public string $url,
-        public string $user,
-        public string $pass,
+        private string $url,
+        private string $user,
+        private string $pass,
     ) {
         $this->url = rtrim($this->url, '/');
     }
     // phpcs:enable
 
-//    /**
-//     * Obtiene las grabaciones de la página especificada
-//     *
-//     * @param int $pageNumber Número de página
-//     * @return \App\Library\RecordingCollection
-//     * @throws \Exception
-//     */
-//    public function getRecordings(int $pageNumber = 1): RecordingCollection
-//    {
-//        $content = $this->getPage($pageNumber);
-//
-//        $parser = new PageParser($content);
-//        $this->properties = $parser->getProperties();
-//
-//        return $parser->getRecordings();
-//    }
-//
+    /**
+     * Obtiene una instancia de la clase Device configurada con las propiedades del dispositivo actual
+     *
+     * @return Device
+     * @throws \Exception
+     */
+    public function getDevice(): Device
+    {
+        if (!isset($this->device)) {
+            $html = $this->doRequest('rec/rec_file.asp');
+            $content = $this->getRelevantContent($html);
+
+            preg_match_all('/var ([A-Za-z_]+) = (\d+);/', $content, $matches);
+
+            $properties = [];
+            foreach ($matches[1] as $index => $name) {
+                $properties[$name] = (int)$matches[2][$index];
+            }
+
+            $this->device = new Device($properties);
+        }
+
+        return $this->device;
+    }
+
+    /**
+     * Obtiene las grabaciones
+     *
+     * @return RecordingCollection
+     * @throws \Exception
+     */
+    public function getRecordings(): RecordingCollection
+    {
+        $collection = new RecordingCollection();
+        $pages = $this->getDevice()->getTotalPages();
+
+        for ($page = $pages; $page >= 1; $page--) {
+            $html = $this->doRequest('rec/rec_file.asp?page=' . $page);
+            $content = $this->getRelevantContent($html);
+
+            preg_match_all('/^rec_files(_size|_recstart|_recend)?\[\d{1,2}]+\s=(.+);/m', $content, $matches);
+
+            foreach (array_chunk($matches[2], 4) as $chunk) {
+                $collection->add(new Recording(
+                    trim($chunk[0], "'"),
+                    (int)$chunk[1],
+                    new \DateTimeImmutable(trim($chunk[2], "'")),
+                    new \DateTimeImmutable(trim($chunk[3], "'"))
+                ));
+            }
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Realiza una petición
+     *
+     * @param string $path Ruta
+     * @param bool $returnResponse Indica que debe devolverse el contenido de la respuesta
+     * @return string|null
+     */
+    private function doRequest(string $path, bool $returnResponse = true): ?string
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, sprintf('%s/%s', $this->url, $path));
+        curl_setopt($ch, CURLOPT_USERPWD, sprintf('%s:%s', $this->user, $this->pass));
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_BUFFERSIZE, 65536);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+        if (!$returnResponse) {
+            curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        }
+
+        $error = null;
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+        }
+        curl_close($ch);
+
+        if ($error) {
+            if (!$returnResponse && stripos($error, 'Operation timed out after') === false) {
+                throw new \RuntimeException($error);
+            }
+        }
+
+        return $returnResponse ? $response : null;
+    }
+
+    /**
+     * Obtiene el contenido que contiene las propiedades del dispositivo y las grabaciones
+     *
+     * @param string $html Documento HTML
+     * @return string
+     */
+    private function getRelevantContent($html): string
+    {
+        $start = strpos($html, 'var sdcardDetected');
+        $end = strpos($html, 'function initTranslation');
+
+        return trim(substr($html, $start, $end - $start));
+    }
+
 //    /**
 //     * Descarga las grabaciones de la página especificada
 //     *
@@ -80,100 +178,6 @@ class IPCam
 //            }
 //            $this->io->out(sprintf('Eliminado \'%s\'.', $recording->getFilename()));
 //        }
-//    }
-//
-//    /**
-//     * Obtiene el espacio total
-//     *
-//     * @return int
-//     * @throws \Exception
-//     */
-//    public function getTotalSpace(): int
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        return $this->properties->SdcardTotalSpace ?? 0;
-//    }
-//
-//    /**
-//     * Obtiene el espacio libre
-//     *
-//     * @return int
-//     * @throws \Exception
-//     */
-//    public function getFreeSpace(): int
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        return $this->properties->SdcardFreeSpace ?? 0;
-//    }
-//
-//    /**
-//     * Obtiene el total de grabaciones
-//     *
-//     * @return int
-//     * @throws \Exception
-//     */
-//    public function getTotalRecordings(): int
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        return $this->properties->RecFilesTotal ?? 0;
-//    }
-//
-//    /**
-//     * Obtiene la cantidad de grabaciones por página
-//     *
-//     * @return int
-//     * @throws \Exception
-//     */
-//    public function getRecordingsPerPage(): int
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        return $this->properties->PageMaxitem ?? 0;
-//    }
-//
-//    /**
-//     * Obtiene el total de páginas
-//     *
-//     * @return int
-//     * @throws \Exception
-//     */
-//    public function getTotalPages(): int
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        if (isset($this->properties->RecFilesTotal, $this->properties->PageMaxitem)) {
-//            return (int)ceil($this->properties->RecFilesTotal / $this->properties->PageMaxitem);
-//        }
-//
-//        return 0;
-//    }
-//
-//    /**
-//     * Indica si la cámara se encuentra grabando
-//     *
-//     * @return bool
-//     * @throws \Exception
-//     */
-//    public function isRunning(): bool
-//    {
-//        if (!$this->properties) {
-//            $this->getRecordings();
-//        }
-//
-//        return isset($this->properties->RecRuning) ? (bool)$this->properties->RecRuning : false;
 //    }
 //
 //    /**
