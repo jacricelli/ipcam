@@ -113,7 +113,6 @@ class IPCam
 
         $output->writeln('<info>Comenzando a descargar las grabaciones...</info>');
 
-        $index = 0;
         $skip = array_flip($skip);
         foreach ($recordings as $index => $recording) {
             if (!isset($skip[$recording->getFileName()])) {
@@ -130,11 +129,7 @@ class IPCam
             }
         }
 
-        if ($index < $total) {
-            $output->writeln(PHP_EOL . '<info>Se han descargado $index de $total grabaciones.</info>');
-        } else {
-            $output->writeln(PHP_EOL . '<info>Se han descargado todas las grabaciones.</info>');
-        }
+        $output->writeln(PHP_EOL . '<info>Se han descargado todas las grabaciones.</info>');
     }
 
     /**
