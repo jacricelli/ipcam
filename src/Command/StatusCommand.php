@@ -22,6 +22,18 @@ class StatusCommand extends Command
     protected static $defaultName = 'status';
 
     /**
+     * Configura el comando
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $this
+            ->setDescription('Estado del dispositivo')
+            ->setHelp('Este comando muestra propiedades del dispositivo.');
+    }
+
+    /**
      * Ejecuta el comando
      *
      * @param InputInterface $input Entrada
